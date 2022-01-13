@@ -21,9 +21,9 @@ export default function Estimator({ api }) {
             axios({
                 method: 'post',
                 url: '/api/estimate',
-                data: JSON.stringify({
+                data: {
                     origin: `${position.coords.latitude},${position.coords.longitude}`,
-                  })
+                  }
             })
             .then(function (response) {
                 const result = response
