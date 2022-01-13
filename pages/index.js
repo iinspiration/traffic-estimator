@@ -1,27 +1,29 @@
-import React, { useState } from "react";
+import React from "react";
 import Head from 'next/head'
-import Image from 'next/image'
-import { useEffect } from 'react'
 import styles from '../styles/Home.module.css'
+import axios from 'axios'
+import Estimator from "@components/estimator";
 
-export default function Home() {
-  const [currentLocation,setCurrentLocation] = useState(false)
-  useEffect(()=>{
-    console.log("useEffect")
-    navigator.geolocation.getCurrentPosition(function(position) {
-      console.log("Latitude is :", position.coords.latitude);
-      console.log("Longitude is :", position.coords.longitude);
-
-      if(!currentLocation){
-        setCurrentLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        })
+export async function getServerSideProps(context) {
+  const url = process.env.DISTRANCE_MATRIX_API_URL
+  const key = process.env.GOOGLE_API_KEY
+  console.log("url", url)
+  console.log("key", key)
+  console.log("process.env.DB_HOST", process.env.DB_HOST)
+  
+  return { 
+    props: {
+      api:{
+        url,
+        key
       }
+    }
+  }
+}
 
-    });
-  })
 
+export default function Home({ api }) {
+  console.log("Home api", api)
   return (
     <div className={styles.container}>
       <Head>
@@ -39,13 +41,8 @@ export default function Home() {
         <p className={styles.description}>
          Get live traffic, For better decision
         </p>
-        {
-          currentLocation 
-          && <p className={styles.code}>
-              Current coordinate : ( latitude: {currentLocation.latitude} long: {currentLocation.longitude} )
-            </p>
-        }
-        
+
+        <Estimator api={api}/>
 
       </main>
 
@@ -61,3 +58,10 @@ export default function Home() {
     </div>
   )
 }
+
+
+
+
+
+
+
