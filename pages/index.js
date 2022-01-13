@@ -1,8 +1,27 @@
+import React, { useState } from "react";
 import Head from 'next/head'
 import Image from 'next/image'
+import { useEffect } from 'react'
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
+  const [currentLocation,setCurrentLocation] = useState(false)
+  useEffect(()=>{
+    console.log("useEffect")
+    navigator.geolocation.getCurrentPosition(function(position) {
+      console.log("Latitude is :", position.coords.latitude);
+      console.log("Longitude is :", position.coords.longitude);
+
+      if(!currentLocation){
+        setCurrentLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        })
+      }
+
+    });
+  })
+
   return (
     <div className={styles.container}>
       <Head>
@@ -20,12 +39,13 @@ export default function Home() {
         <p className={styles.description}>
          Get live traffic, For better decision
         </p>
-
-        <div className={styles.grid}>
-
-
-
-        </div>
+        {
+          currentLocation 
+          && <p className={styles.code}>
+              Current coordinate : ( latitude: {currentLocation.latitude} long: {currentLocation.longitude} )
+            </p>
+        }
+        
 
       </main>
 
