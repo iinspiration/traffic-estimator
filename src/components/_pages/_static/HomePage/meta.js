@@ -1,7 +1,7 @@
 export function getMeta() {
   const meta = {
     main: {
-      title: 'Homepage',
+      title: 'Traffic Estimator App',
     },
   }
 
