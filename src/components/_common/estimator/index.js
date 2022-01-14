@@ -5,63 +5,84 @@ import * as EstimatorService from '@modules/estimator/services'
 
 export default function Estimator() {
     const [currentLocation,setCurrentLocation] = useState(false)
-    const [result,setResult] = useState(false)
+    const [results,setResults] = useState([])
+
+    let destinations = [
+        {
+            title : "Victory Monument (Bangkok)",
+            loc : "Victory Monument,BKK",
+        },
+        {
+            title : "Siam Paragon (Bangkok)",
+            loc : "Siam Paragon,BKK"
+        },
+        {
+            title : "Asoke Intersection (Bangkok)",
+            loc : "Asoke Intersection,BKK"
+        },
+        {
+            title : "Suvarnabhumi Airport (Bangkok)",
+            loc : "Suvarnabhumi Airport,BKK"
+        }
+    ]
 
     useEffect( ()=>{
-        navigator.geolocation.getCurrentPosition(function(position) {
-        console.log("Latitude is :", position.coords.latitude);
-        console.log("Longitude is :", position.coords.longitude);
 
-        if(!currentLocation && !result){
-            setCurrentLocation({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-            })
+        navigator.geolocation.getCurrentPosition(async function(position) {
 
-            EstimatorService.estimateDistrance({
-                origin: `${position.coords.latitude},${position.coords.longitude}`,
-                destination: `Bangkok`,
-              })
-            .then(function (response) {
-                const result = response         
-                // console.log('result.data',result);
-                // console.log('result.origin_addresses',result.origin_addresses[0]);
-                // console.log('result.destination_addresses',result.destination_addresses[0]);
-                // console.log('result.distance',result.rows[0]);
-                setResult({
-                    origin:result.origin_addresses[0],
-                    destination:result.destination_addresses[0],
-                    distance:result.rows[0].elements[0].distance.text,
-                    duration_in_traffic:result.rows[0].elements[0].duration_in_traffic.text,
+            console.log("Latitude is :", position.coords.latitude);
+            console.log("Longitude is :", position.coords.longitude);
+
+            if(!currentLocation && !results.length){
+                setCurrentLocation({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
                 })
-            })
+
+                const originCoord = `${position.coords.latitude},${position.coords.longitude}`
 
 
-        }
-
-
+                const results = await Promise.all(destinations.map( destination => {
+                    console.log('destination.loc',destination.loc)
+                    return  EstimatorService.estimateDistrance({
+                        origin: originCoord,
+                        destination: destination.loc,
+                    })
+                    .then(function (response) {
+                        const result = response         
+                        return {
+                            ...destination,
+                            distance: result.rows[0].elements[0].distance.text,
+                            duration_in_traffic: result.rows[0].elements[0].duration_in_traffic.text,
+                        }
+                    })
+                    
+                }))
+                setResults(results)
+            }
         });
     })
 
-    return (currentLocation && result)
-        && <div className={styles.result}>
+    console.log('results',results);
+
+    if(currentLocation && results.length){
+        return <div>
+            <div className={styles.result}>
                 <p >
-                    Your Current coordinate : ( latitude: {currentLocation.latitude} long: {currentLocation.longitude} )
+                    Your Current location : (latitude: {currentLocation.latitude} long: {currentLocation.longitude})
                 </p>
-                <p >
-                    Origin : {result.origin}
-                </p>
-                <p >
-                    Destination : Victory Monument {result.destination}
-                </p>
-                <p >
-                    Distance : {result.distance}
-                </p>
-                <p >
-                    Estimation Time : {result.duration_in_traffic}
-                </p>
-                
+            </div>
+            <div className={styles.result}>
+                {results.map(dest => {
+                    return <p key={`p-${dest.title}`}>
+                        {dest.distance} to {dest.title} , takes {dest.duration_in_traffic} from now
+                    </p>
+                })}
                 
             </div>
+        </div>
+        
+    }
+    return ''
       
 }
