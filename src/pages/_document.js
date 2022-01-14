@@ -16,7 +16,6 @@ export default class MyDocument extends Document {
             href={`${getStatic('css/fonts.css')}`}
             as="style"
           />
-
           <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
           <link rel="preconnect" href="https://www.googletagmanager.com" />
           <link rel="shortcut icon" href={`${getStatic('favicon.ico')}`} />
