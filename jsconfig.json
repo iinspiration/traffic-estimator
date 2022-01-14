@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
-    "baseUrl": "./",
+    "baseUrl": "./src",
     "paths": {
       "@components/*": ["components/*"],
-      "@styles/*": ["styles/*"],
-      "@lib/*": ["lib/*"]
+      "@modules/*": ["modules/*"],
+      "@lib/*": ["lib/*"],
+      "@link": ["components/_common/Link"]
     }
   },
   "exclude": [
