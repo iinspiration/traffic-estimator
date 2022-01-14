@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from 'axios'
 import styles from '../../../../public/static/css/Home.module.css'
+
+import * as EstimatorService from '@modules/estimator/services'
 
 export default function Estimator() {
     const [currentLocation,setCurrentLocation] = useState(false)
@@ -17,36 +18,30 @@ export default function Estimator() {
                 longitude: position.coords.longitude,
             })
 
-            axios({
-                method: 'post',
-                url: '/api/estimate',
-                data: {
-                    origin: `${position.coords.latitude},${position.coords.longitude}`,
-                  }
-            })
+            EstimatorService.estimateDistrance({
+                origin: `${position.coords.latitude},${position.coords.longitude}`,
+                destination: `Bangkok`,
+              })
             .then(function (response) {
-                const result = response
-                // return response.data
-                console.log('result.data',result.data);
-                console.log('result.data.origin_addresses',result.data.origin_addresses[0]);
-                console.log('result.data.destination_addresses',result.data.destination_addresses[0]);
-                console.log('result.data.distance',result.data.rows[0]);
+                const result = response         
+                // console.log('result.data',result);
+                // console.log('result.origin_addresses',result.origin_addresses[0]);
+                // console.log('result.destination_addresses',result.destination_addresses[0]);
+                // console.log('result.distance',result.rows[0]);
                 setResult({
-                    origin:result.data.origin_addresses[0],
-                    destination:result.data.destination_addresses[0],
-                    distance:result.data.rows[0].elements[0].distance.text,
-                    duration_in_traffic:result.data.rows[0].elements[0].duration_in_traffic.text,
+                    origin:result.origin_addresses[0],
+                    destination:result.destination_addresses[0],
+                    distance:result.rows[0].elements[0].distance.text,
+                    duration_in_traffic:result.rows[0].elements[0].duration_in_traffic.text,
                 })
             })
+
 
         }
 
 
         });
     })
-
-    console.log('resultsss',result);
-    console.log('results origin',result.origin);
 
     return (currentLocation && result)
         && <div className={styles.result}>
