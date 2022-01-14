@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "paths": {
-      "@components/*": ["components/*"],
-      "@modules/*": ["modules/*"],
-      "@lib/*": ["lib/*"],
-      "@link": ["components/_common/Link"]
+      "@components/*": ["src/components/*"],
+      "@modules/*": ["src/modules/*"],
+      "@lib/*": ["src/lib/*"],
+      "@styles/*": ["public/static/css/*"],
+      "@link": ["src/components/_common/Link"],
     }
   },
   "exclude": [

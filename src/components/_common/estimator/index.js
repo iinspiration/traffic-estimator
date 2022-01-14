@@ -1,30 +1,13 @@
 import React, { useState, useEffect } from "react";
-import styles from '../../../../public/static/css/Home.module.css'
+import styles from "@styles/Home.module.css"
+import { get } from 'lodash'
 
+import * as GoogleSheetService from '@modules/googlesheet/services'
 import * as EstimatorService from '@modules/estimator/services'
 
 export default function Estimator() {
     const [currentLocation,setCurrentLocation] = useState(false)
     const [results,setResults] = useState([])
-
-    let destinations = [
-        {
-            title : "Victory Monument (Bangkok)",
-            loc : "Victory Monument,BKK",
-        },
-        {
-            title : "Siam Paragon (Bangkok)",
-            loc : "Siam Paragon,BKK"
-        },
-        {
-            title : "Asoke Intersection (Bangkok)",
-            loc : "Asoke Intersection,BKK"
-        },
-        {
-            title : "Suvarnabhumi Airport (Bangkok)",
-            loc : "Suvarnabhumi Airport,BKK"
-        }
-    ]
 
     useEffect( ()=>{
 
@@ -41,19 +24,22 @@ export default function Estimator() {
 
                 const originCoord = `${position.coords.latitude},${position.coords.longitude}`
 
+                const loadedDestinations = await GoogleSheetService.getLocationOnSheet();
 
-                const results = await Promise.all(destinations.map( destination => {
-                    console.log('destination.loc',destination.loc)
+                console.log('loadedDestinations',loadedDestinations)
+
+                const results = await Promise.all(loadedDestinations.map( destination => {
+                    console.log('destination.loc',destination.location)
                     return  EstimatorService.estimateDistrance({
                         origin: originCoord,
-                        destination: destination.loc,
+                        destination: destination.location,
                     })
                     .then(function (response) {
                         const result = response         
                         return {
                             ...destination,
-                            distance: result.rows[0].elements[0].distance.text,
-                            duration_in_traffic: result.rows[0].elements[0].duration_in_traffic.text,
+                            distance: get(result,'rows[0].elements[0].distance.text','-'),
+                            duration_in_traffic: get(result,'rows[0].elements[0].duration_in_traffic.text','-'),
                         }
                     })
                     
@@ -75,7 +61,7 @@ export default function Estimator() {
             <div className={styles.result}>
                 {results.map(dest => {
                     return <p key={`p-${dest.title}`}>
-                        {dest.distance} to {dest.title} , takes {dest.duration_in_traffic} from now
+                        {dest.distance || ''} to {dest.title} , takes {dest.duration_in_traffic || ''} from now
                     </p>
                 })}
                 
