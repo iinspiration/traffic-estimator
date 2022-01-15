@@ -9,45 +9,73 @@ export default function Estimator() {
     const [currentLocation,setCurrentLocation] = useState(false)
     const [results,setResults] = useState([])
 
-    useEffect( ()=>{
+    const refetchInterval = process.env.REFETCH_INTERVAL || 60000
 
-        navigator.geolocation.getCurrentPosition(async function(position) {
+    console.log("=== refetchInterval is :", refetchInterval);
+    
+    async function fetchingProcess({ originCoord, setResults}){
 
-            console.log("Latitude is :", position.coords.latitude);
-            console.log("Longitude is :", position.coords.longitude);
+        console.log("===== Start Fetching Location =====")
 
-            if(!currentLocation && !results.length){
-                setCurrentLocation({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                })
+        const loadedDestinations = await GoogleSheetService.getLocationOnSheet();
 
-                const originCoord = `${position.coords.latitude},${position.coords.longitude}`
+        console.log('loadedDestinations',loadedDestinations)
 
-                const loadedDestinations = await GoogleSheetService.getLocationOnSheet();
+        const estimatedResults = await Promise.all(loadedDestinations.map( destination => {
 
-                console.log('loadedDestinations',loadedDestinations)
+            console.log('destination.loc',destination.location)
+            
+            return  EstimatorService.estimateDistrance({
+                origin: originCoord,
+                destination: destination.location,
+            })
+            .then(function (response) {
+                const result = response         
+                return {
+                    ...destination,
+                    distance: get(result,'rows[0].elements[0].distance.text','-'),
+                    duration_in_traffic: get(result,'rows[0].elements[0].duration_in_traffic.text','-'),
+                }
+            })
+            
+        }))
 
-                const results = await Promise.all(loadedDestinations.map( destination => {
-                    console.log('destination.loc',destination.location)
-                    return  EstimatorService.estimateDistrance({
-                        origin: originCoord,
-                        destination: destination.location,
-                    })
-                    .then(function (response) {
-                        const result = response         
-                        return {
-                            ...destination,
-                            distance: get(result,'rows[0].elements[0].distance.text','-'),
-                            duration_in_traffic: get(result,'rows[0].elements[0].duration_in_traffic.text','-'),
-                        }
-                    })
-                    
-                }))
-                setResults(results)
-            }
-        });
-    })
+        setResults(estimatedResults)
+
+        console.log("===== End Fetching Location =====")
+
+    }
+
+    useEffect( async ()=>{
+        
+            await navigator.geolocation.getCurrentPosition(async function(position) {
+
+                console.log("Latitude is :", position.coords.latitude);
+                console.log("Longitude is :", position.coords.longitude);
+
+                    if(!currentLocation && !results.length){
+                        setCurrentLocation({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                        })
+        
+                        const originCoord = `${position.coords.latitude},${position.coords.longitude}`
+
+                        await fetchingProcess({ originCoord,setResults })
+        
+                        const interval = setInterval(async () => {
+
+                                await fetchingProcess({ originCoord,setResults })
+
+                            }, refetchInterval);
+
+                        return () => clearInterval(interval);
+                        
+                    }
+
+            });
+            
+    },[results])
 
     console.log('results',results);
 
