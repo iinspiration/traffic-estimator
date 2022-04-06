@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 1000",
     "analyze": "BUNDLE_ANALYZE=browser npm run build",
     "export": "next export src",
     "api": "node ./api/server.js",

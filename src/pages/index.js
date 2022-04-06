@@ -11,6 +11,6 @@ async function fetchData() {
   // const articleLatest = await ArticleService.getArticles({ limit: 10 })
 
   return {
-    props: { },
+    props: {},
   }
 }
